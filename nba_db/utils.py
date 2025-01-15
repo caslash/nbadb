@@ -49,7 +49,7 @@ def get_proxies():
     )
     df = (
         pd.read_csv(
-            "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies_geolocation/http.txt",
+            "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies_anonymous/http.txt",
             sep="|",
             header=None,
         )
@@ -75,7 +75,7 @@ def get_proxies():
 def get_db_conn():
     logger.info("Connecting to database...")
     db_name = "nba-db/nba.sqlite"
-    conn = sqlite3.connect(db_name)
+    conn = sqlite3.connect(db_name, check_same_thread=False)
     logger.info("Connected to database. Returning connection object...")
     return conn
 

@@ -237,12 +237,14 @@ def get_player_info_helper(player, proxies):
 
 @log(logger)
 def get_player_info(proxies, save_to_db: bool = False, conn=None) -> pd.DataFrame:
+    logger.info("Retreiving player info...")
     player_ids = pd.read_sql("SELECT id FROM player", conn)["id"].astype("category")
     with Pool(250) as p:
         dfs = p.map(partial(get_player_info_helper, proxies=proxies), player_ids)
     dfs = [df for df in dfs if df is not None]
     dfs = pd.concat(dfs, ignore_index=True).reset_index(drop=True)
     try:
+        logger.info("Validating player info rows against schema...")
         dfs = CommonPlayerInfoSchema.validate(dfs, lazy=True)
     except SchemaErrors as err:
         logger.error("Schema validation failed for players")
@@ -251,7 +253,9 @@ def get_player_info(proxies, save_to_db: bool = False, conn=None) -> pd.DataFram
         return None
     logger.info("Successfully retrieved common player info for all players.")
     if save_to_db:
+        logger.info("Saving common player info to database...")
         dfs.to_sql("common_player_info", conn, if_exists="replace", index=False)
+        logger.info("Successfully saved common player info to database. Returning data...")
     return dfs
 
 
@@ -290,6 +294,7 @@ def get_teams_details_helper(team, proxies):
 
 @log(logger)
 def get_teams_details(proxies, save_to_db: bool = False, conn=None) -> pd.DataFrame:
+    logger.info('Retreiving teams details...')
     team_ids = pd.read_sql("SELECT id FROM team", conn)["id"].astype("category")
     with Pool(250) as p:
         dfs = p.map(partial(get_teams_details_helper, proxies=proxies), team_ids)
@@ -310,9 +315,12 @@ def get_teams_details(proxies, save_to_db: bool = False, conn=None) -> pd.DataFr
         logger.error(f"Schema errors: {err.failure_cases}")
         logger.error(f"Invalid dataframe: {err.data}")
         return None
+    logger.info("Successfully retrieved all teams' details")
     if save_to_db:
+        logger.info("Saving team details to database...")
         team_details.to_sql("team_details", conn, if_exists="replace", index=False)
         team_history.to_sql("team_history", conn, if_exists="replace", index=False)
+        logger.info('Successfully saved team details to database. Returning data...')
     return dfs
 
 
@@ -522,6 +530,7 @@ def get_draft_combine_stats_helper(season, proxies):
 
 @log(logger)
 def get_draft_combine_stats(proxies, season=None, save_to_db=False, conn=None):
+    logger.info("Retrieving all draft combine stats...")
     if season is None:
         seasons = [str(season) for season in range(1946, datetime.today().year + 1)]
         with Pool(len(seasons)) as p:
@@ -542,8 +551,11 @@ def get_draft_combine_stats(proxies, season=None, save_to_db=False, conn=None):
         logger.error(f"Schema errors: {err.failure_cases}")
         logger.error(f"Invalid dataframe: {err.data}")
         dfs = None
+    logger.info("Successfully retrieved all draft combine stats...")
     if save_to_db:
+        logger.info("Saving draft combine stats to database...")
         dfs.to_sql("draft_combine_stats", conn, if_exists="replace", index=False)
+        logger.info("Successfully saved draft combine stats to database. Returning data...")
     return dfs
 
 
@@ -563,6 +575,7 @@ def get_draft_history_helper(season, proxies):
 
 @log(logger)
 def get_draft_history(proxies, season=None, save_to_db=False, conn=None):
+    logger.info('Retreiving draft history...')
     if season is None:
         seasons = [str(season) for season in range(1946, datetime.today().year + 1)]
         with Pool(len(seasons)) as p:
@@ -579,8 +592,11 @@ def get_draft_history(proxies, season=None, save_to_db=False, conn=None):
         logger.error(f"Schema errors: {err.failure_cases}")
         logger.error(f"Invalid dataframe: {err.data}")
         dfs = None
+    logger.info("Successfully retrieved draft history.")
     if save_to_db:
+        logger.info("Saving draft history to database...")
         dfs.to_sql("draft_history", conn, if_exists="replace", index=False)
+        logger.info("Successfully saved draft history to database. Returning data...")
     return dfs
 
 
@@ -601,6 +617,7 @@ def get_team_info_common_helper(team, proxies):
 
 @log(logger)
 def get_team_info_common(proxies, save_to_db=False, conn=None):
+    logger.info('Retreiving common team info...')
     dfs = pd.read_sql("SELECT id FROM team", conn)["id"].tolist()
     num_workers = len(dfs)
     with Pool(num_workers) as p:
@@ -613,6 +630,9 @@ def get_team_info_common(proxies, save_to_db=False, conn=None):
         logger.error(f"Schema errors: {err.failure_cases}")
         logger.error(f"Invalid dataframe: {err.data}")
         dfs = None
+    logger.info("Successfully retrieved common team info")
     if save_to_db:
+        logger.info("Saving common team info to database...")
         dfs.to_sql("team_info_common", conn, if_exists="replace", index=False)
+        logger.info("Successfully saved common team info to database. Returning data...")
     return dfs

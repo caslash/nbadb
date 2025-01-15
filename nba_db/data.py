@@ -1,13 +1,14 @@
 """data table definitions
 """
 # -- Imports --------------------------------------------------------------------------
+from typing import Optional
 import pandera as pa
-from pandera import SchemaModel
+from pandera import DataFrameModel
 from pandera.typing import Bool, DateTime, Float, Int, Object, Series, String
 
 
 # -- Data -----------------------------------------------------------------------------
-class PlayerSchema(SchemaModel):
+class PlayerSchema(DataFrameModel):
     id: Series[String] = pa.Field(nullable=False, coerce=True)
     full_name: Series[String] = pa.Field()
     first_name: Series[String] = pa.Field()
@@ -15,7 +16,7 @@ class PlayerSchema(SchemaModel):
     is_active: Series[Bool] = pa.Field(coerce=True)
 
 
-class TeamSchema(SchemaModel):
+class TeamSchema(DataFrameModel):
     id: Series[String] = pa.Field(nullable=False, coerce=True)
     full_name: Series[String] = pa.Field(nullable=False)
     abbreviation: Series[String] = pa.Field()
@@ -25,7 +26,7 @@ class TeamSchema(SchemaModel):
     year_founded: Series[Float] = pa.Field(coerce=True)
 
 
-class LeagueGameLogSchema(SchemaModel):
+class LeagueGameLogSchema(DataFrameModel):
     season_id: Series[String] = pa.Field(nullable=False)
     team_id_home: Series[String] = pa.Field(nullable=False)
     team_abbreviation_home: Series[String] = pa.Field()
@@ -86,7 +87,7 @@ class LeagueGameLogSchema(SchemaModel):
         coerce = True
 
 
-class CommonPlayerInfoSchema(SchemaModel):
+class CommonPlayerInfoSchema(DataFrameModel):
     person_id: Series[String] = pa.Field(nullable=False)
     first_name: Series[String] = pa.Field()
     last_name: Series[String] = pa.Field()
@@ -97,7 +98,7 @@ class CommonPlayerInfoSchema(SchemaModel):
     birthdate: Series[DateTime] = pa.Field()
     school: Series[String] = pa.Field(nullable=True)
     country: Series[String] = pa.Field(nullable=True)
-    last_affiliation: Series[String] = pa.Field()
+    last_affiliation: Series[String] = pa.Field(nullable=True)
     height: Series[String] = pa.Field()
     weight: Series[String] = pa.Field(nullable=True)
     season_exp: Series[Float] = pa.Field()
@@ -125,7 +126,7 @@ class CommonPlayerInfoSchema(SchemaModel):
         coerce = True
 
 
-class TeamDetailsSchema(SchemaModel):
+class TeamDetailsSchema(DataFrameModel):
     team_id: Series[String] = pa.Field()
     abbreviation: Series[String] = pa.Field(nullable=True)
     nickname: Series[String] = pa.Field(nullable=True)
@@ -145,7 +146,7 @@ class TeamDetailsSchema(SchemaModel):
         coerce = True
 
 
-class TeamHistorySchema(SchemaModel):
+class TeamHistorySchema(DataFrameModel):
     team_id: Series[String] = pa.Field()
     city: Series[String] = pa.Field()
     nickname: Series[String] = pa.Field()
@@ -156,7 +157,7 @@ class TeamHistorySchema(SchemaModel):
         coerce = True
 
 
-class GameSummarySchema(SchemaModel):
+class GameSummarySchema(DataFrameModel):
     game_date_est: Series[DateTime] = pa.Field()
     game_sequence: Series[Object] = pa.Field(nullable=True)
     game_id: Series[String] = pa.Field()
@@ -176,7 +177,7 @@ class GameSummarySchema(SchemaModel):
         coerce = True
 
 
-class OtherStatsSchema(SchemaModel):
+class OtherStatsSchema(DataFrameModel):
     game_id: Series[String] = pa.Field()
     league_id: Series[String] = pa.Field()
     team_id_home: Series[String] = pa.Field()
@@ -208,7 +209,7 @@ class OtherStatsSchema(SchemaModel):
         coerce = True
 
 
-class OfficialsSchema(SchemaModel):
+class OfficialsSchema(DataFrameModel):
     game_id: Series[String] = pa.Field()
     official_id: Series[String] = pa.Field()
     first_name: Series[String] = pa.Field()
@@ -219,7 +220,7 @@ class OfficialsSchema(SchemaModel):
         coerce = True
 
 
-class InactivePlayersSchema(SchemaModel):
+class InactivePlayersSchema(DataFrameModel):
     game_id: Series[String] = pa.Field()
     player_id: Series[String] = pa.Field()
     first_name: Series[String] = pa.Field()
@@ -234,7 +235,7 @@ class InactivePlayersSchema(SchemaModel):
         coerce = True
 
 
-class GameInfoSchema(SchemaModel):
+class GameInfoSchema(DataFrameModel):
     game_id: Series[String] = pa.Field()
     game_date: Series[DateTime] = pa.Field()
     attendance: Series[Object] = pa.Field(nullable=True)
@@ -244,7 +245,7 @@ class GameInfoSchema(SchemaModel):
         coerce = True
 
 
-class LineScoreSchema(SchemaModel):
+class LineScoreSchema(DataFrameModel):
     game_date_est: Series[DateTime] = pa.Field()
     game_sequence: Series[Object] = pa.Field(nullable=True)
     game_id: Series[String] = pa.Field()
@@ -293,7 +294,7 @@ class LineScoreSchema(SchemaModel):
         coerce = True
 
 
-class PlayByPlaySchema(SchemaModel):
+class PlayByPlaySchema(DataFrameModel):
     game_id: Series[String] = pa.Field()
     eventnum: Series[Int] = pa.Field()
     eventmsgtype: Series[Int] = pa.Field()
@@ -333,7 +334,7 @@ class PlayByPlaySchema(SchemaModel):
         coerce = True
 
 
-class DraftCombineStatsSchema(SchemaModel):
+class DraftCombineStatsSchema(DataFrameModel):
     season: Series[String] = pa.Field()
     player_id: Series[String] = pa.Field()
     first_name: Series[String] = pa.Field()
@@ -363,7 +364,7 @@ class DraftCombineStatsSchema(SchemaModel):
         coerce = True
 
 
-class DraftHistorySchema(SchemaModel):
+class DraftHistorySchema(DataFrameModel):
     person_id: Series[String] = pa.Field()
     player_name: Series[String] = pa.Field()
     season: Series[String] = pa.Field()
@@ -383,7 +384,7 @@ class DraftHistorySchema(SchemaModel):
         coerce = True
 
 
-class TeamInfoCommonSchema(SchemaModel):
+class TeamInfoCommonSchema(DataFrameModel):
     team_id: Series[String] = pa.Field()
     season_year: Series[String] = pa.Field()
     team_city: Series[String] = pa.Field()

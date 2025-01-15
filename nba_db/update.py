@@ -7,6 +7,8 @@ import shutil
 import subprocess
 from datetime import datetime
 
+from concurrent.futures import ThreadPoolExecutor
+
 import pandas as pd
 
 from nba_db.extract import (
@@ -107,21 +109,32 @@ def daily():
 
 @log(logger)
 def monthly():
-    # download db from Kaggle
+    print("Downloading database...")
     download_db()
-    # get proxies and establish db connenction
+    print("Database downloaded!")
+
+    print("Getting proxies...")
     proxies = get_proxies()
+    print("Retrieved proxies!")
+
+    print("Connecting to database...")
     conn = get_db_conn()
-    # update players & teams
-    get_players(save_to_db=True, conn=conn)
-    get_teams(save_to_db=True, conn=conn)
-    get_player_info(proxies=proxies, save_to_db=True, conn=conn)
-    get_teams_details(proxies=proxies, save_to_db=True, conn=conn)
-    get_draft_combine_stats(proxies=proxies, season=None, save_to_db=True, conn=conn)
-    get_draft_history(proxies=proxies, season=None, save_to_db=True, conn=conn)
-    get_team_info_common(proxies=proxies, save_to_db=True, conn=conn)
-    # upload new db version to Kaggle
-    version_message = f"Monthly update: {pd.to_datetime('today').strftime('%Y-%m-%d')}"
-    upload_new_db_version(version_message)
-    # close db connection
+    print("Database connected!")
+
+    print("Starting monthly update...")
+
+    tasks = [
+        lambda: get_players(save_to_db=True, conn=conn),
+        lambda: get_teams(save_to_db=True, conn=conn),
+        lambda: get_player_info(proxies=proxies, save_to_db=True, conn=conn),
+        lambda: get_teams_details(proxies=proxies, save_to_db=True, conn=conn),
+        lambda: get_draft_combine_stats(proxies=proxies, season=None, save_to_db=True, conn=conn),
+        lambda: get_draft_history(proxies=proxies, season=None, save_to_db=True, conn=conn),
+        lambda: get_team_info_common(proxies=proxies, save_to_db=True, conn=conn)
+    ]
+
+    with ThreadPoolExecutor() as executor:
+        executor.map(lambda task: task(), tasks)
+
     conn.close()
+    print("Monthly update completed.")
