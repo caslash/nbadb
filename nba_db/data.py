@@ -1,7 +1,6 @@
 """data table definitions
 """
 # -- Imports --------------------------------------------------------------------------
-from typing import Optional
 import pandera as pa
 from pandera import DataFrameModel
 from pandera.typing import Bool, DateTime, Float, Int, Object, Series, String
@@ -111,12 +110,14 @@ class CommonPlayerInfoSchema(DataFrameModel):
     team_abbreviation: Series[String] = pa.Field()
     team_code: Series[String] = pa.Field()
     team_city: Series[String] = pa.Field()
+    team_history: Series[String] = pa.Field(nullable=True)
     playercode: Series[String] = pa.Field(nullable=True)
     from_year: Series[Float] = pa.Field(nullable=True)
     to_year: Series[Float] = pa.Field(nullable=True)
     dleague_flag: Series[String] = pa.Field()
     nba_flag: Series[String] = pa.Field()
     games_played_flag: Series[String] = pa.Field()
+    total_games_played: Series[Int] = pa.Field()
     draft_year: Series[String] = pa.Field(nullable=True)
     draft_round: Series[String] = pa.Field(nullable=True)
     draft_number: Series[String] = pa.Field(nullable=True)

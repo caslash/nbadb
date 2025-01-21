@@ -16,6 +16,7 @@ from nba_api.stats.endpoints.leaguegamelog import LeagueGameLog
 from nba_api.stats.endpoints.playbyplayv2 import PlayByPlayV2
 from nba_api.stats.endpoints.teamdetails import TeamDetails
 from nba_api.stats.endpoints.teaminfocommon import TeamInfoCommon
+from nba_api.stats.endpoints.playerprofilev2 import PlayerProfileV2
 from nba_api.stats.static import players, teams
 from pandera.errors import SchemaErrors
 from requests.exceptions import RequestException
@@ -224,10 +225,26 @@ def get_league_game_log_all(proxies, conn) -> pd.DataFrame:
 def get_player_info_helper(player, proxies):
     while True:
         try:
+            selected_proxy = np.random.choice(proxies)
             df = CommonPlayerInfo(
-                player_id=player, proxy=np.random.choice(proxies), timeout=3
+                player_id=player, proxy=selected_proxy, timeout=3
             ).get_data_frames()[0]
+    
+            player_stats_df = PlayerProfileV2(
+                per_mode36='PerGame', player_id=player, proxy=selected_proxy, timeout=3
+            ).season_totals_regular_season.get_data_frame()
+            filtered_df = player_stats_df[player_stats_df['TEAM_ID'] != 0]
+            only_nba_df = filtered_df[filtered_df['LEAGUE_ID'] != 00]
+            unique_team_ids = only_nba_df['TEAM_ID'].loc[only_nba_df['TEAM_ID'].shift() != only_nba_df['TEAM_ID']].astype(str).tolist()
+            team_string = ','.join([str(id) for id in unique_team_ids])
+
+            games_played = only_nba_df['GP'].sum()
+
+            df['team_history'] = [team_string]
+            df['total_games_played'] = [games_played]
+
             df.columns = df.columns.to_series().apply(lambda x: x.lower())
+            print(f"Successfully retrieved info for {player}")
             return df
         except RequestException:
             continue
@@ -237,25 +254,26 @@ def get_player_info_helper(player, proxies):
 
 @log(logger)
 def get_player_info(proxies, save_to_db: bool = False, conn=None) -> pd.DataFrame:
-    logger.info("Retreiving player info...")
+    print("Retreiving player info...")
     player_ids = pd.read_sql("SELECT id FROM player", conn)["id"].astype("category")
+
     with Pool(250) as p:
         dfs = p.map(partial(get_player_info_helper, proxies=proxies), player_ids)
     dfs = [df for df in dfs if df is not None]
     dfs = pd.concat(dfs, ignore_index=True).reset_index(drop=True)
     try:
-        logger.info("Validating player info rows against schema...")
+        print("Validating player info rows against schema...")
         dfs = CommonPlayerInfoSchema.validate(dfs, lazy=True)
     except SchemaErrors as err:
-        logger.error("Schema validation failed for players")
-        logger.error(f"Schema errors: {err.failure_cases}")
-        logger.error(f"Invalid dataframe: {err.data}")
+        print("Schema validation failed for players")
+        print(f"Schema errors: {err.failure_cases}")
+        print(f"Invalid dataframe: {err.data}")
         return None
-    logger.info("Successfully retrieved common player info for all players.")
+    print("Successfully retrieved common player info for all players.")
     if save_to_db:
-        logger.info("Saving common player info to database...")
+        print("Saving common player info to database...")
         dfs.to_sql("common_player_info", conn, if_exists="replace", index=False)
-        logger.info("Successfully saved common player info to database. Returning data...")
+        print("Successfully saved common player info to database. Returning data...")
     return dfs
 
 

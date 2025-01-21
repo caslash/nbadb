@@ -109,9 +109,9 @@ def daily():
 
 @log(logger)
 def monthly():
-    print("Downloading database...")
-    download_db()
-    print("Database downloaded!")
+    # print("Downloading database...")
+    # download_db()
+    # print("Database downloaded!")
 
     print("Getting proxies...")
     proxies = get_proxies()
@@ -124,13 +124,14 @@ def monthly():
     print("Starting monthly update...")
 
     tasks = [
-        lambda: get_players(save_to_db=True, conn=conn),
-        lambda: get_teams(save_to_db=True, conn=conn),
+        # lambda: get_players(save_to_db=True, conn=conn),
+        # lambda: get_teams(save_to_db=True, conn=conn),
         lambda: get_player_info(proxies=proxies, save_to_db=True, conn=conn),
-        lambda: get_teams_details(proxies=proxies, save_to_db=True, conn=conn),
-        lambda: get_draft_combine_stats(proxies=proxies, season=None, save_to_db=True, conn=conn),
-        lambda: get_draft_history(proxies=proxies, season=None, save_to_db=True, conn=conn),
-        lambda: get_team_info_common(proxies=proxies, save_to_db=True, conn=conn)
+        # lambda: get_teams_details(proxies=proxies, save_to_db=True, conn=conn),
+        # lambda: get_draft_combine_stats(proxies=proxies, season=None, save_to_db=True, conn=conn),
+        # lambda: get_draft_history(proxies=proxies, season=None, save_to_db=True, conn=conn),
+        # lambda: get_team_info_common(proxies=proxies, save_to_db=True, conn=conn),
+        # lambda: get_player_team_history(proxies=proxies, save_to_db=True, conn=conn)
     ]
 
     with ThreadPoolExecutor() as executor:
